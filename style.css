@@ -5,8 +5,8 @@ body {
 .parent {
 	position: relative;
 	border: 1px solid black;
-	width: 30%;
-	padding-bottom: 30%;
+	width: 15%;
+	padding-bottom: 15%;
 	margin-bottom: 10px;
 	float: left;
 }
