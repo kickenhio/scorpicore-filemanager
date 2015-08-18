@@ -3,17 +3,17 @@ body {
 }
 
 .parent {
-	position: relative;
 	border: 1px solid black;
-	width: 15%;
-	padding-bottom: 15%;
-	margin-bottom: 10px;
 	float: left;
+	height: 0;
+	margin-bottom: 10px;
+	padding-bottom: 10%;
+	position: relative;
+	width: 10%;
 }
 
 .uknownsize {
 	display: block;
-	background: red;
 	position: absolute;
 	left: 50%;
 	top: 50%;
