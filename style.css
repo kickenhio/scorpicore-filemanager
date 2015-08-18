@@ -1,3 +1,26 @@
 body {
 	background: #868484;
 }
+
+.parent {
+	position: relative;
+	border: 1px solid black;
+	width: 30%;
+	padding-bottom: 30%;
+	margin-bottom: 10px;
+	float: left;
+}
+
+.uknownsize {
+	display: block;
+	background: red;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	max-width: 100%;
+	max-height: 100%;
+	height: auto;
+	width: auto;
+	overflow: hidden;
+}
