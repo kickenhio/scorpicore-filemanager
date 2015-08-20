@@ -30,6 +30,7 @@
 		};
 		
 		uploader.onSuccessItem = function(fileItem, response, status, headers) {
+			fileItem.remove();
 			var index = $scope.list.map(function(e) { return e.name; }).indexOf(fileItem.file.name);
 			$scope.list[index] = response;
 		};
