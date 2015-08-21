@@ -45,6 +45,11 @@
 		$http.get("/admin/fileupload/load").then(function(response) {
 			$scope.list = response.data;
 		});
+			
+		$scope.select = function(obj){
+			window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src);
+			window.close();
+		};
 		
 		/* usun */
 		$scope.delete = function(obj) {
