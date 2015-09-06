@@ -40,3 +40,9 @@ body {
 	background: #fff;
 	position: fixed;
 }
+
+.rendition {
+	background-repeat: no-repeat;
+    background-size: cover;
+	height: 0;
+}

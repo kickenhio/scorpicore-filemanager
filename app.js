@@ -1,5 +1,26 @@
 (function(){
-	angular.module('AngularExample', ['angularFileUpload']).controller('exampleController', 
+	angular.module('AngularExample', ['angularFileUpload', 'ngJcrop'])
+	
+		.config(function(ngJcropConfigProvider){
+			// [optional] To change the jcrop configuration
+			// All jcrop settings are in: http://deepliquid.com/content/Jcrop_Manual.html#Setting_Options
+			ngJcropConfigProvider.setJcropConfig({
+				bgColor: 'black',
+				bgOpacity: .4,
+				aspectRatio: 0
+			});
+			
+			// [optional] To change the css style in the preview image
+			ngJcropConfigProvider.setPreviewStyle({
+				'width': '100px',
+				'height': '100px',
+				'overflow': 'hidden',
+				'margin-left': '5px'
+			});
+
+		})
+		
+		.controller('exampleController', 
 		['$scope', '$http', 'FileUploader', function($scope,$http,FileUploader) {
 		
 		vex.defaultOptions.className = 'vex-theme-default';
@@ -42,12 +63,43 @@
 			}
 		};
 		
+		
 		$http.get("/admin/fileupload/load").then(function(response) {
 			$scope.list = response.data;
+			console.log(response.data);
 		});
-			
+		
+		$scope.crop = function(item){
+			$scope.cropobj = {}
+			// The url or the data64 for the image
+			$scope.cropobj.src = '/'+item.src;
+			// Must be [x, y, x2, y2, w, h]
+			$scope.cropobj.coords = [100, 100, 200, 200, 100, 100];
+			// You can add a thumbnail if you want
+			$scope.cropobj.thumbnail = true;
+		};
+		
+		$scope.getCrop = function(obj){
+			$http.post("/admin/fileupload/getcrop", { obj: obj }).then(function(response) {
+				window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+response.data.link,function(){
+					var element,
+					dialog = this.getDialog();
+					
+					element = dialog.getContentElement( 'tab-basic', 'padding' );
+					element.setValue( response.data.resolution[1] / response.data.resolution[0] );
+				});
+			window.close();
+			});
+		};
+		
 		$scope.select = function(obj){
-			window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src);
+			window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function(){
+				var element,
+        		dialog = this.getDialog();
+				
+				element = dialog.getContentElement( 'tab-basic', 'padding' );
+				element.setValue( obj.resolution[1] / obj.resolution[0] );
+			});
 			window.close();
 		};
 		
