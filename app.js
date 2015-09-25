@@ -81,25 +81,41 @@
 		
 		$scope.getCrop = function(obj){
 			$http.post("/admin/fileupload/getcrop", { obj: obj }).then(function(response) {
-				window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+response.data.link,function(){
+				if(ckeditor_func != null)
+				{
+					window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+response.data.link,function()
+					{
 					//var element,
 					//dialog = this.getDialog();
 					
 					//element = dialog.getContentElement( 'tab-basic', 'padding' );
 					//element.setValue( response.data.resolution[1] / response.data.resolution[0] );
 				});
+				}
+				else
+				{
+					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
+				}
 			window.close();
 			});
 		};
 		
 		$scope.select = function(obj){
-			window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function(){
+			if(ckeditor_func != null)
+			{
+				window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function()
+				{
 				//var element,
         		//dialog = this.getDialog();
 				
 				//element = dialog.getContentElement( 'tab-basic', 'padding' );
 				//element.setValue( obj.resolution[1] / obj.resolution[0] );
 			});
+			}
+			else
+			{
+				window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
+			}
 			window.close();
 		};
 		
