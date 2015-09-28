@@ -63,11 +63,83 @@
 			}
 		};
 		
-		
 		$http.get("/admin/fileupload/load").then(function(response) {
-			$scope.list = response.data;
-			console.log(response.data);
+			$scope.list = response.data.files;
+			$scope.directories = response.data.directories;
 		});
+		
+		$scope.dirClick = function(item)
+		{
+			if(item.active == 'active'){
+			$http.get("/admin/fileupload/load",{
+				params: {
+						location: item.location
+				}
+			}).then(function(response) {
+				$scope.list = response.data.files;
+				$scope.directories = response.data.directories;
+			});
+			}
+			else
+			{
+				angular.forEach($scope.directories, function(value) {
+				  value.active = false;
+				});
+				item.active = 'active';
+			}
+		};
+		
+		$scope.deleteFolder = function(){
+			vex.dialog.confirm({
+			  message: 'Czy napewno usunac?',
+			  callback: function(value) {
+				if(value){
+					var aktywna = null;
+					angular.forEach($scope.directories, function(value) {
+					  if(value.active == 'active')
+					  {
+						  aktywna = value;
+					  }
+					});
+					
+					$http.post("/admin/fileupload/deletedirectory", { name: aktywna.location }).then(function(response) {
+						$scope.directories.splice($scope.directories.indexOf(aktywna), 1);
+					});
+				}
+		  	}});
+		}
+		
+		$scope.newFolder = function(){
+			vex.dialog.open({
+			  message: 'Nazwa folderu:',
+			  input: "<input name=\"folder_name\" type=\"text\" required />",
+			  buttons: [
+				$.extend({}, vex.dialog.buttons.YES, {
+				  text: 'Dodaj'
+				}), $.extend({}, vex.dialog.buttons.NO, {
+				  text: 'Cancel'
+				})
+			  ],
+			  callback: function(data) {
+				if (data === false) {
+					
+				}
+				else if(false && data.folder_name !== newpass)
+				{
+					vex.dialog.alert('Rozne hasla!');
+				}
+				else {
+					$http.post("/admin/fileupload/newdirectory", { folder_name: data.folder_name }).then(function(response) {
+						$scope.directories.push({
+							name: data.folder_name,
+							location: response.data.location,
+							active: 'false'
+						});
+					});
+				}
+			  }
+			});
+		}
 		
 		$scope.crop = function(item){
 			$scope.cropobj = {}
