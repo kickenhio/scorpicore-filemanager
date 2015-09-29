@@ -19,7 +19,7 @@
 			});
 		})
 		
-		.controller('exampleController', ['$scope', '$http', 'FileUploader', 'ngJcropConfig', function($scope,$http,FileUploader, ngJcropConfig) {
+		.controller('exampleController', ['$scope', '$rootScope', '$http', 'FileUploader', function($scope, $rootScope, $http, FileUploader) {
 		
 		$scope.thumbs = (function(sizes)
 		{
@@ -39,7 +39,6 @@
 		})
 		(thumbs);
 		
-		console.log($scope.thumbs);
 		vex.defaultOptions.className = 'vex-theme-default';
 		var csrf_token = document.querySelector('input[name="_token"]').getAttribute('value');
 		$scope.uploader = new FileUploader({
@@ -49,12 +48,12 @@
 			url: '/admin/fileupload/upload'
 		});
 		
-		$scope.pickThumbnail = function(size) {
-			/* TODO */
-			/* 1. ustal ratio */
-			/* ngJcropConfig.jcrop.aspectRatio = 'nowe ratio'; */
-			/* ngJcropConfig.previewImgStyle['width'] = 200 * (0 + ratio) + 'px'; */
-			/* ngJcropConfig.previewImgStyle['height'] = 200 * (1 - ratio) + 'px'; */
+		$scope.pickThumbnail = function(sel) {
+//			$scope.$emit('setSelection',[0,0,1,1]);
+//			ngJcropConfig.jcrop.aspectRatio = sel.ratio;
+//			ngJcropConfig.previewImgStyle['width'] = 200 * (0 + ratio) + 'px';
+//			ngJcropConfig.previewImgStyle['height'] = 200 * (1 - ratio) + 'px';
+//			alert(200 * (1 - ratio) + 'px');
 		}
 		
 		$scope.uploader.filters.push({
@@ -166,7 +165,6 @@
 			});
 		}
 		
-		$scope.cropsel = null;
 		$scope.crop = function(item){
 			$scope.cropobj = {}
 			// The url or the data64 for the image
