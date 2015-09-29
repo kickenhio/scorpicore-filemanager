@@ -17,46 +17,71 @@
 				'overflow': 'hidden',
 				'margin-left': '5px'
 			});
-
 		})
 		
-		.controller('exampleController', 
-		['$scope', '$http', 'FileUploader', function($scope,$http,FileUploader) {
+		.controller('exampleController', ['$scope', '$http', 'FileUploader', 'ngJcropConfig', function($scope,$http,FileUploader, ngJcropConfig) {
 		
+		$scope.thumbs = (function(sizes)
+		{
+			var temp = {};
+			angular.forEach(sizes, function(value, key) {
+				var arr = value.split('x');
+				var ratio = parseInt(arr[0]) / parseInt(arr[1])
+				temp[key] = {
+					'name' : key,
+					'default' : value,
+					'width' : arr[0],
+					'height' : arr[1],
+					'ratio' : ratio
+				}
+			});
+			return temp;
+		})
+		(thumbs);
+		
+		console.log($scope.thumbs);
 		vex.defaultOptions.className = 'vex-theme-default';
 		var csrf_token = document.querySelector('input[name="_token"]').getAttribute('value');
-		var uploader = $scope.uploader = new FileUploader({
+		$scope.uploader = new FileUploader({
 			headers : {
 				'X-CSRF-TOKEN': csrf_token
 			},
 			url: '/admin/fileupload/upload'
 		});
 		
-		uploader.filters.push({
+		$scope.pickThumbnail = function(size) {
+			/* TODO */
+			/* 1. ustal ratio */
+			/* ngJcropConfig.jcrop.aspectRatio = 'nowe ratio'; */
+			/* ngJcropConfig.previewImgStyle['width'] = 200 * (0 + ratio) + 'px'; */
+			/* ngJcropConfig.previewImgStyle['height'] = 200 * (1 - ratio) + 'px'; */
+		}
+		
+		$scope.uploader.filters.push({
 			name: 'customFilter',
 			fn: function(item, options) {
 				return this.queue.length < 10;
 			}
 		});
 		
-		uploader.onBeforeUploadItem = function(item) {
+		$scope.uploader.onBeforeUploadItem = function(item) {
 			$scope.list.push({
 				name: item.file.name,
 				thumb: 'loading'
 			});
 		};
-		uploader.onProgressItem = function(fileItem, progress) {
+		$scope.uploader.onProgressItem = function(fileItem, progress) {
 			var index = $scope.list.map(function(e) { return e.name; }).indexOf(fileItem.file.name);
 			$scope.list[index]['percent'] = progress;
 		};
 		
-		uploader.onSuccessItem = function(fileItem, response, status, headers) {
+		$scope.uploader.onSuccessItem = function(fileItem, response, status, headers) {
 			fileItem.remove();
 			var index = $scope.list.map(function(e) { return e.name; }).indexOf(fileItem.file.name);
 			$scope.list[index] = response;
 		};
 		
-		var controller = $scope.controller = {
+		$scope.controller = {
 			isImage: function(item) {
 				var type = '|' + item.type.slice(item.type.lastIndexOf('/') + 1) + '|';
 				return '|jpg|png|jpeg|bmp|gif|'.indexOf(type) !== -1;
@@ -141,6 +166,7 @@
 			});
 		}
 		
+		$scope.cropsel = null;
 		$scope.crop = function(item){
 			$scope.cropobj = {}
 			// The url or the data64 for the image
