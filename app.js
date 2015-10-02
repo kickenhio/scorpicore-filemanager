@@ -1,23 +1,6 @@
 (function(){
-	angular.module('AngularExample', ['angularFileUpload', 'ngJcrop'])
-	
-		.config(function(ngJcropConfigProvider){
-			// [optional] To change the jcrop configuration
-			// All jcrop settings are in: http://deepliquid.com/content/Jcrop_Manual.html#Setting_Options
-			ngJcropConfigProvider.setJcropConfig({
-				bgColor: 'black',
-				bgOpacity: .4,
-				aspectRatio: 0
-			});
-			
-			// [optional] To change the css style in the preview image
-			ngJcropConfigProvider.setPreviewStyle({
-				'width': '100px',
-				'height': '100px',
-				'overflow': 'hidden',
-				'margin-left': '5px'
-			});
-		})
+	angular
+		.module('AngularExample', ['angularFileUpload'])
 		
 		.controller('exampleController', ['$scope', '$rootScope', '$http', 'FileUploader', function($scope, $rootScope, $http, FileUploader) {
 		
@@ -47,14 +30,6 @@
 			},
 			url: '/admin/fileupload/upload'
 		});
-		
-		$scope.pickThumbnail = function(sel) {
-//			$scope.$emit('setSelection',[0,0,1,1]);
-//			ngJcropConfig.jcrop.aspectRatio = sel.ratio;
-//			ngJcropConfig.previewImgStyle['width'] = 200 * (0 + ratio) + 'px';
-//			ngJcropConfig.previewImgStyle['height'] = 200 * (1 - ratio) + 'px';
-//			alert(200 * (1 - ratio) + 'px');
-		}
 		
 		$scope.uploader.filters.push({
 			name: 'customFilter',
@@ -165,53 +140,22 @@
 			});
 		}
 		
-		$scope.crop = function(item){
-			$scope.cropobj = {}
-			// The url or the data64 for the image
-			$scope.cropobj.src = '/'+item.src;
-			// Must be [x, y, x2, y2, w, h]
-			$scope.cropobj.coords = [100, 100, 200, 200, 100, 100];
-			// You can add a thumbnail if you want
-			$scope.cropobj.thumbnail = true;
-		};
-		
-		$scope.getCrop = function(obj){
-			$http.post("/admin/fileupload/getcrop", { obj: obj }).then(function(response) {
+		$scope.select = function(obj){
 				if(ckeditor_func != null)
 				{
-					window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+response.data.link,function()
+				window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function()
 					{
 					//var element,
 					//dialog = this.getDialog();
 					
 					//element = dialog.getContentElement( 'tab-basic', 'padding' );
-					//element.setValue( response.data.resolution[1] / response.data.resolution[0] );
+					//element.setValue( obj.resolution[1] / obj.resolution[0] );
 				});
 				}
 				else
 				{
 					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
 				}
-			window.close();
-			});
-		};
-		
-		$scope.select = function(obj){
-			if(ckeditor_func != null)
-			{
-				window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function()
-				{
-				//var element,
-        		//dialog = this.getDialog();
-				
-				//element = dialog.getContentElement( 'tab-basic', 'padding' );
-				//element.setValue( obj.resolution[1] / obj.resolution[0] );
-			});
-			}
-			else
-			{
-				window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
-			}
 			window.close();
 		};
 		
