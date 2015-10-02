@@ -3,9 +3,11 @@
 		.module('AngularExample', ['angularFileUpload'])
 		
 		.controller('exampleController', ['$scope', '$rootScope', '$http', 'FileUploader', function($scope, $rootScope, $http, FileUploader) {
-		
+		$scope.crop = false;
 		$scope.thumbs = (function(sizes)
 		{
+			if(sizes != 'null')
+			{
 			var temp = {};
 			angular.forEach(sizes, function(value, key) {
 				var arr = value.split('x');
@@ -19,8 +21,10 @@
 				}
 			});
 			return temp;
-		})
-		(thumbs);
+			}
+			return null;
+			
+		})(thumbs);
 		
 		vex.defaultOptions.className = 'vex-theme-default';
 		var csrf_token = document.querySelector('input[name="_token"]').getAttribute('value');
@@ -84,6 +88,7 @@
 				angular.forEach($scope.directories, function(value) {
 				  value.active = false;
 				});
+				
 				item.active = 'active';
 			}
 		};
@@ -95,8 +100,7 @@
 				if(value){
 					var aktywna = null;
 					angular.forEach($scope.directories, function(value) {
-					  if(value.active == 'active')
-					  {
+						if(value.active == 'active') {
 						  aktywna = value;
 					  }
 					});
@@ -140,7 +144,8 @@
 			});
 		}
 		
-		$scope.select = function(obj){
+		$scope.select = function(obj)
+		{
 				if(ckeditor_func != null)
 				{
 				window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function()
@@ -154,9 +159,45 @@
 				}
 				else
 				{
+				if($scope.thumbs != null)
+				{
+					vex.dialog.confirm({
+					  message: 'Czy przyciac obrazki?',
+					  callback: function(value) {
+						if(value){
+							$scope.crop = true;
+							$('#cropper').cropper({
+							  aspectRatio: 16 / 9,
+							  autoCropArea: 0.65,
+							  strict: false,
+							  guides: false,
+							  highlight: false,
+							  dragCrop: true,
+							  zoomable: false,
+							  crop: function(e) {
+								// Output the result data for cropping image.
+								console.log(e.x);
+								console.log(e.y);
+								console.log(e.width);
+								console.log(e.height);
+								console.log(e.rotate);
+								console.log(e.scaleX);
+								console.log(e.scaleY);
+							  }
+							});
+						}
+						else
+						{
+					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
+							window.close();
+						}
+					}});
+				}
+				else
+				{
 					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
 				}
-			window.close();
+			}
 		};
 		
 		/* usun */
