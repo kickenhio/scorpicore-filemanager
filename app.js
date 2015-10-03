@@ -17,7 +17,8 @@
 					'default' : value,
 					'width' : arr[0],
 					'height' : arr[1],
-					'ratio' : ratio
+					'ratio' : ratio,
+					'chosen' : false
 				}
 			});
 			return temp;
@@ -152,7 +153,6 @@
 					{
 					//var element,
 					//dialog = this.getDialog();
-					
 					//element = dialog.getContentElement( 'tab-basic', 'padding' );
 					//element.setValue( obj.resolution[1] / obj.resolution[0] );
 				});
@@ -161,44 +161,81 @@
 				{
 				if($scope.thumbs != null)
 				{
-					vex.dialog.confirm({
-					  message: 'Czy przyciac obrazki?',
-					  callback: function(value) {
-						if(value){
-							$scope.crop = true;
-							$('#cropper').cropper({
-							  aspectRatio: 16 / 9,
-							  autoCropArea: 0.65,
-							  strict: false,
-							  guides: false,
-							  highlight: false,
-							  dragCrop: true,
-							  zoomable: false,
-							  crop: function(e) {
-								// Output the result data for cropping image.
-								console.log(e.x);
-								console.log(e.y);
-								console.log(e.width);
-								console.log(e.height);
-								console.log(e.rotate);
-								console.log(e.scaleX);
-								console.log(e.scaleY);
-							  }
-							});
+					$scope.getThumbs(obj);
 						}
 						else
 						{
 					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
 							window.close();
 						}
-					}});
-				}
-				else
-				{
-					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
-				}
 			}
 		};
+		
+		
+		
+		$scope.getThumbs = function(obj)
+		{
+			var wybrany = null;
+			angular.forEach($scope.thumbs, function(value, key) {
+				if(wybrany == null && value.chosen == false) {
+					wybrany = $scope.thumbs[key];
+				}
+			});
+			
+			if(wybrany == null)
+				{
+					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
+				window.opener.FilePicker.getThumbsFromManager(filepickerID, JSON.stringify($scope.thumbs));
+				window.close();
+			}
+			
+			vex.dialog.open({
+				message: 'Wybierz zaznaczenie dla '+wybrany.default,
+				input: "<img style=\"max-width:100%;\" src=\"/"+obj.src+"\" id=\"cropper\" alt=\"\">",
+				buttons: [
+					$.extend({}, vex.dialog.buttons.YES, {
+					  text: 'Wybierz'
+					}), $.extend({}, vex.dialog.buttons.NO, {
+					  text: 'Nie wybieraj'
+					})
+				],
+				afterOpen: function() {
+					$('#cropper').cropper({
+					  aspectRatio: wybrany.ratio,
+					  autoCropArea: 0.65,
+					  strict: true,
+					  guides: false,
+					  highlight: true,
+					  dragCrop: true,
+					  zoomable: false,
+					  crop: function(e) {
+						console.log(e.x);
+						console.log(e.y);
+						console.log(e.width);
+						console.log(e.height);
+						console.log(e.rotate);
+						console.log(e.scaleX);
+						console.log(e.scaleY);
+					  }
+					});
+				},
+				afterClose: function() {
+					$('#cropper').cropper('destroy');
+					$scope.getThumbs(obj);
+				},
+				callback: function(data) {
+					if (data === false) {
+						$.amaran({
+							'message':'Cancelled.'
+						});
+						$scope.thumbs[wybrany['name']]['chosen'] = 'empty';
+					}
+					else {
+						$scope.thumbs[wybrany['name']]['chosen'] = $('#cropper').cropper('getData',true);
+					}
+				  }
+			});
+		}
 		
 		/* usun */
 		$scope.delete = function(obj) {
