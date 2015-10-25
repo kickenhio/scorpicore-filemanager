@@ -27,7 +27,9 @@
 			
 		})(thumbs);
 		
+		
 		vex.defaultOptions.className = 'vex-theme-default';
+		
 		var csrf_token = document.querySelector('input[name="_token"]').getAttribute('value');
 		$scope.uploader = new FileUploader({
 			headers : {
@@ -199,6 +201,7 @@
 					  text: 'Nie wybieraj'
 					})
 				],
+				className: 'vex-theme-default wybierz-zaznaczenie',
 				afterOpen: function() {
 					$('#cropper').cropper({
 					  aspectRatio: wybrany.ratio,
