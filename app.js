@@ -201,7 +201,7 @@
 					  text: 'Nie wybieraj'
 					})
 				],
-				className: 'vex-theme-default wybierz-zaznaczenie',
+				className: 'vex-theme-scorpicore',
 				afterOpen: function() {
 					$('#cropper').cropper({
 					  aspectRatio: wybrany.ratio,
@@ -210,7 +210,7 @@
 					  guides: false,
 					  highlight: true,
 					  dragCrop: true,
-					  zoomable: false,
+					  zoomable: true,
 					  crop: function(e) {
 						console.log(e.x);
 						console.log(e.y);
