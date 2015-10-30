@@ -335,6 +335,87 @@
 				});
 			}
 			
+			$scope.modify = function(obj) {
+				
+				caman = function(obj, alter){
+					$("#caman").removeAttr("data-caman-id");
+					Caman("#caman", '/'+obj.src, function () {
+						
+						if ($('input[data-filter=clip]').val() != 0) {
+						this.brightness($('input[data-filter=brightness]').val()); }
+						
+						if ($('input[data-filter=clip]').val() != 0) {
+						this.clip($('input[data-filter=clip]').val()); }
+						
+						this.sharpen($('input[data-filter=sharpen]').val());
+						
+						if (alter){
+							this.render(function () {
+								var image = this.toBase64();
+								$http.post("/admin/fileupload/modifyimage", { source: obj.src, alter_image: image }).then(function(response) {
+									$.amaran({
+										'message':'Zmodyfikowano.'
+									});
+								});
+						  });
+						} else {
+							this.render();
+						}
+					});
+				};
+				
+				vex.dialog.open({
+					message: 'Wybierz zaznaczenie dla '+obj.name,
+					input: "<div class=\"row\">"+
+								"<div class=\"small-7 columns\" style=\"border:1px solid black;\">"+
+									"<canvas id=\"caman\" style=\"max-height:100%;max-width:100%;\"></canvas>"+
+								"</div>"+
+								"<div class=\"small-5 columns\">"+
+									"<div class=\"row\">"+
+										"<div class=\"small-12 columns\">"+
+											"<input type=\"range\" min=\"-100\" max=\"100\" step=\"1\" value=\"0\" data-filter=\"brightness\">"+
+										"</div>"+
+										"<div class=\"small-12 columns\">"+
+											"<input type=\"range\" min=\"0\" max=\"100\" step=\"1\" value=\"0\" data-filter=\"clip\">"+
+										"</div>"+
+										"<div class=\"small-12 columns\">"+
+											"<input type=\"range\" min=\"0\" max=\"100\" step=\"1\" value=\"0\" data-filter=\"sharpen\">"+
+										"</div>"+
+									"</div>"+
+								"</div>"+
+							"</div>",
+					buttons: [
+						$.extend({}, vex.dialog.buttons.YES, {
+						  text: 'Wybierz'
+						}), $.extend({}, vex.dialog.buttons.NO, {
+						  text: 'Nie wybieraj'
+						})
+					],
+					className: 'vex-theme-scorpicore',
+					afterOpen: function() {
+						caman(obj);
+						$('input[data-filter]').change(function(){
+							caman(obj);
+						});
+				
+					},
+					afterClose: function() {
+						// nothing?
+					},
+					callback: function(data) {
+						if (data === false) {
+							$.amaran({
+								'message':'Cancelled.'
+							});
+						}
+						else
+						{
+							caman(obj,true);
+						}
+					  }
+				});
+			}
+			
 			$scope.delete = function(obj) {
 				vex.dialog.confirm({
 				  message: 'Czy napewno usunac?',
