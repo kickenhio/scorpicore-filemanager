@@ -102,23 +102,61 @@
 				}
 			};
 
-			$scope.deleteFolder = function(){
+			$scope.deleteFolder = function(dir){
 				vex.dialog.confirm({
 				  message: 'Czy napewno usunac?',
 				  callback: function(value) {
 					if(value){
-						var aktywna = null;
-						angular.forEach($scope.directories, function(value) {
-							if(value.active == 'active') {
-							  aktywna = value;
-						  }
-						});
-						
-						$http.post("/admin/fileupload/deletedirectory", { name: aktywna.location }).then(function(response) {
-							$scope.directories.splice($scope.directories.indexOf(aktywna), 1);
+						$http.post("/admin/fileupload/deletedirectory", { name: dir.location }).then(function(response) {
+							$scope.directories.splice($scope.directories.indexOf(dir), 1);
 						});
 					}
 				}});
+			}
+			
+			$scope.copycutFolder = function(dir, method) {
+				$http.post("/admin/fileupload/copycut",
+				{ location: dir.location, method: method, name: dir.name })
+				.then(function(response) {
+					$.amaran({
+						'message':'Skopiowano do zasobnika.'
+					});
+				});
+			};
+			
+			$scope.renameFolder = function(dir) {
+				console.log(dir);
+				vex.dialog.open({
+				  message: 'Nazwa folderu:',
+				  input: "<div class=\"row collapse postfix-radius\">"+
+							"<div class=\"small-12 columns\">" +
+							  "<input name=\"new_name\" type=\"text\" value=\""+dir.name+"\" required />" +
+							  "<input name=\"old_name\" type=\"hidden\" value=\""+dir.name+"\" />" +
+							"</div>" +
+						  "</div>",
+				  buttons: [
+					$.extend({}, vex.dialog.buttons.YES, {
+					  text: 'Zmien'
+					}), $.extend({}, vex.dialog.buttons.NO, {
+					  text: 'Cancel'
+					})
+				  ],
+				  callback: function(data) {
+					if (data === false) {
+						$.amaran({
+							'message':'Cancelled.'
+						});
+					}
+					else {
+						$http.post("/admin/fileupload/renamefile",
+						{ source: dir.location, old_name: data.old_name, new_name: data.new_name })
+						.then(function(response) {
+							dir.name = response.data.name;
+							dir.location = response.data.src;
+						});
+					}
+				  }
+				});
 			}
 			
 			$scope.copycut = function(obj, method) {
