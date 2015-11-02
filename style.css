@@ -1,13 +1,44 @@
 .parent {
-	border: 1px solid black;
+	border: none;
 	float: left;
 	height: 0;
-	margin-bottom: 5%;
+	margin-bottom: 20px;
 	margin-left: 1%;
 	margin-top: 2%;
 	padding-bottom: 15%;
 	position: relative;
 	width: 15%;
+}
+
+.directory {
+	float: left;
+	height: 0;
+	margin-bottom: 20px;
+	margin-left: 1%;
+	margin-top: 2%;
+	padding-bottom: 15%;
+	position: relative;
+	width: 15%;
+	cursor: pointer;
+}
+
+.directory.active {
+	color: dodgerblue;
+}
+
+.icon-folder{
+	font-size: 10.2vw;
+}
+
+.directory .ng-bindings{
+	left: 0;
+	position: absolute;
+	top: 100%;
+	width: 100%;
+}
+
+.parent.active {
+	border: 1px solid blue;
 }
 
 .uknownsize {

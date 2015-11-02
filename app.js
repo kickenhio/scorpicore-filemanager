@@ -24,12 +24,11 @@
 				return temp;
 				}
 				return null;
-
+				
 			})(thumbs);
-
-
+			
 			vex.defaultOptions.className = 'vex-theme-default';
-
+			
 			var csrf_token = document.querySelector('input[name="_token"]').getAttribute('value');
 			$scope.uploader = new FileUploader({
 				headers : {
@@ -37,38 +36,38 @@
 				},
 				url: '/admin/fileupload/upload'
 			});
-
+			
 			$scope.uploader.filters.push({
 				name: 'customFilter',
 				fn: function(item, options) {
 					return this.queue.length < 10;
 				}
 			});
-
+			
 			$scope.uploader.onBeforeUploadItem = function(item) {
 				$scope.list.push({
 					name: item.file.name,
 					thumb: 'loading'
 				});
 			};
+			
 			$scope.uploader.onProgressItem = function(fileItem, progress) {
 				var index = $scope.list.map(function(e) { return e.name; }).indexOf(fileItem.file.name);
 				$scope.list[index]['percent'] = progress;
 			};
-
+			
 			$scope.uploader.onSuccessItem = function(fileItem, response, status, headers) {
 				fileItem.remove();
 				var index = $scope.list.map(function(e) { return e.name; }).indexOf(fileItem.file.name);
 				$scope.list[index] = response;
 			};
-
+			
 			$scope.controller = {
 				isImage: function(item) {
 					var type = '|' + item.type.slice(item.type.lastIndexOf('/') + 1) + '|';
 					return '|jpg|png|jpeg|bmp|gif|'.indexOf(type) !== -1;
 				}
 			};
-
 			
 			$scope.refresh = function()
 			{
@@ -82,15 +81,16 @@
 			
 			$scope.dirClick = function(item)
 			{
-				if(item.active == 'active'){
-				$http.get("/admin/fileupload/load",{
-					params: {
-						location: item.location
-					}
-				}).then(function(response) {
-					$scope.list = response.data.files;
-					$scope.directories = response.data.directories;
-				});
+				if (item.active == 'active')
+				{
+					$http.get("/admin/fileupload/load",{
+						params: {
+							location: item.location
+						}
+					}).then(function(response) {
+						$scope.list = response.data.files;
+						$scope.directories = response.data.directories;
+					});
 				}
 				else
 				{
@@ -104,7 +104,14 @@
 
 			$scope.deleteFolder = function(dir){
 				vex.dialog.confirm({
-				  message: 'Czy napewno usunac?',
+				  message: Lang.dialogs.delete_directory,
+				  buttons: [
+					$.extend({}, vex.dialog.buttons.YES, {
+					  text: Lang.dialogs.delete_directory_yes
+					}), $.extend({}, vex.dialog.buttons.NO, {
+					  text: Lang.dialogs.delete_directory_no
+					})
+				  ],
 				  callback: function(value) {
 					if(value){
 						$http.post("/admin/fileupload/deletedirectory", { name: dir.location }).then(function(response) {
@@ -119,15 +126,14 @@
 				{ location: dir.location, method: method, name: dir.name })
 				.then(function(response) {
 					$.amaran({
-						'message':'Skopiowano do zasobnika.'
+						'message': Lang.message.copied
 					});
 				});
 			};
 			
 			$scope.renameFolder = function(dir) {
-				console.log(dir);
 				vex.dialog.open({
-				  message: 'Nazwa folderu:',
+				  message: Lang.dialogs.rename_directory,
 				  input: "<div class=\"row collapse postfix-radius\">"+
 							"<div class=\"small-12 columns\">" +
 							  "<input name=\"new_name\" type=\"text\" value=\""+dir.name+"\" required />" +
@@ -136,15 +142,15 @@
 						  "</div>",
 				  buttons: [
 					$.extend({}, vex.dialog.buttons.YES, {
-					  text: 'Zmien'
+					  text: Lang.dialogs.rename_directory_yes
 					}), $.extend({}, vex.dialog.buttons.NO, {
-					  text: 'Cancel'
+					  text: Lang.dialogs.rename_directory_no
 					})
 				  ],
 				  callback: function(data) {
 					if (data === false) {
 						$.amaran({
-							'message':'Cancelled.'
+							'message': Lang.message.rename_directory_cancelled
 						});
 					}
 					else {
@@ -164,7 +170,7 @@
 				{ source: obj.src, method: method, name: obj.name, extension: obj.extension})
 				.then(function(response) {
 					$.amaran({
-						'message':'Skopiowano do zasobnika.'
+						'message': Lang.message.copied
 					});
 				});
 			};
@@ -174,14 +180,14 @@
 				.then(function(response) {
 					$scope.refresh();
 					$.amaran({
-						'message':'Wklejono.'
+						'message': Lang.message.pasted
 					});
 				});
 			};
 			
 			$scope.rename = function(obj) {
 				vex.dialog.open({
-				  message: 'Nazwa folderu:',
+				  message: Lang.dialogs.rename_file,
 				  input: "<div class=\"row collapse postfix-radius\">"+
 							"<div class=\"small-11 columns\">" +
 							  "<input name=\"new_name\" type=\"text\" value=\""+obj.name+"\" required />" +
@@ -193,15 +199,15 @@
 						  "</div>",
 				  buttons: [
 					$.extend({}, vex.dialog.buttons.YES, {
-					  text: 'Zmien'
+					  text: Lang.dialogs.rename_directory_yes
 					}), $.extend({}, vex.dialog.buttons.NO, {
-					  text: 'Cancel'
+					  text: Lang.dialogs.rename_directory_no
 					})
 				  ],
 				  callback: function(data) {
 					if (data === false) {
 						$.amaran({
-							'message':'Cancelled.'
+							'message': Lang.message.rename_file_cancelled
 						});
 					}
 					else {
@@ -218,19 +224,19 @@
 			
 			$scope.newFolder = function() {
 				vex.dialog.open({
-				  message: 'Nazwa folderu:',
+				  message: Lang.dialogs.new_directory,
 				  input: "<input name=\"folder_name\" type=\"text\" required />",
 				  buttons: [
 					$.extend({}, vex.dialog.buttons.YES, {
-					  text: 'Dodaj'
+					  text: Lang.dialogs.new_directory_yes
 					}), $.extend({}, vex.dialog.buttons.NO, {
-					  text: 'Cancel'
+					  text: Lang.dialogs.new_directory_no
 					})
 				  ],
 				  callback: function(data) {
 					if (data === false) {
 						$.amaran({
-							'message':'Cancelled.'
+							'message': Lang.message.cancelled
 						});
 					}
 					else {
@@ -397,7 +403,6 @@
 						$('input[data-filter]').change(function(){
 							caman(obj);
 						});
-				
 					},
 					afterClose: function() {
 						// nothing?
@@ -405,7 +410,7 @@
 					callback: function(data) {
 						if (data === false) {
 							$.amaran({
-								'message':'Cancelled.'
+								'message': Lang.message.cancelled
 							});
 						}
 						else
