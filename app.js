@@ -74,6 +74,7 @@
 				$http.get("/admin/fileupload/load").then(function(response) {
 					$scope.list = response.data.files;
 					$scope.directories = response.data.directories;
+					$scope.breadcrumbs = response.data.breadcrumbs;
 				});
 			};
 			
@@ -81,96 +82,43 @@
 			
 			$scope.dirClick = function(item)
 			{
-				if (item.active == 'active')
+				if (item.selected == 'active' || item.type == 'breadcrumb')
 				{
+					if (item.name == '...')
+					{
+						nazwa = [];
+					}
+					else
+					{
+						nazwa = [item.name];
+					}
+					
 					$http.get("/admin/fileupload/load",{
 						params: {
-							location: item.location
+							"location[]": item.path.concat(nazwa)
 						}
 					}).then(function(response) {
 						$scope.list = response.data.files;
 						$scope.directories = response.data.directories;
+						$scope.breadcrumbs = response.data.breadcrumbs;
 					});
 				}
 				else
 				{
 					angular.forEach($scope.directories, function(value) {
-						value.active = false;
+						value.selected = false;
 					});
 					
-					item.active = 'active';
+					item.selected = 'active';
 				}
 			};
-
-			$scope.deleteFolder = function(dir){
-				vex.dialog.confirm({
-				  message: Lang.dialogs.delete_directory,
-				  buttons: [
-					$.extend({}, vex.dialog.buttons.YES, {
-					  text: Lang.dialogs.delete_directory_yes
-					}), $.extend({}, vex.dialog.buttons.NO, {
-					  text: Lang.dialogs.delete_directory_no
-					})
-				  ],
-				  callback: function(value) {
-					if(value){
-						$http.post("/admin/fileupload/deletedirectory", { name: dir.location }).then(function(response) {
-							$scope.directories.splice($scope.directories.indexOf(dir), 1);
-						});
-					}
-				}});
-			}
-			
-			$scope.copycutFolder = function(dir, method) {
-				$http.post("/admin/fileupload/copycut",
-				{ location: dir.location, method: method, name: dir.name })
-				.then(function(response) {
-					$.amaran({
-						'message': Lang.message.copied
-					});
-				});
-			};
-			
-			$scope.renameFolder = function(dir) {
-				vex.dialog.open({
-				  message: Lang.dialogs.rename_directory,
-				  input: "<div class=\"row collapse postfix-radius\">"+
-							"<div class=\"small-12 columns\">" +
-							  "<input name=\"new_name\" type=\"text\" value=\""+dir.name+"\" required />" +
-							  "<input name=\"old_name\" type=\"hidden\" value=\""+dir.name+"\" />" +
-							"</div>" +
-						  "</div>",
-				  buttons: [
-					$.extend({}, vex.dialog.buttons.YES, {
-					  text: Lang.dialogs.rename_directory_yes
-					}), $.extend({}, vex.dialog.buttons.NO, {
-					  text: Lang.dialogs.rename_directory_no
-					})
-				  ],
-				  callback: function(data) {
-					if (data === false) {
-						$.amaran({
-							'message': Lang.message.rename_directory_cancelled
-						});
-					}
-					else {
-						$http.post("/admin/fileupload/renamefile",
-						{ source: dir.location, old_name: data.old_name, new_name: data.new_name })
-						.then(function(response) {
-							dir.name = response.data.name;
-							dir.location = response.data.src;
-						});
-					}
-				  }
-				});
-			}
 			
 			$scope.copycut = function(obj, method) {
 				$http.post("/admin/fileupload/copycut",
-				{ source: obj.src, method: method, name: obj.name, extension: obj.extension})
+				{ obj: obj, method: method})
 				.then(function(response) {
 					$.amaran({
-						'message': Lang.message.copied
+						'message': (method == 'copy') ? Lang.message.copied : Lang.message.cuted
 					});
 				});
 			};
@@ -186,17 +134,20 @@
 			};
 			
 			$scope.rename = function(obj) {
+				var postfix = '';
+				if (obj.type == 'file') {
+						postfix = "<div class=\"small-1 columns\">" +
+									  "<span class=\"postfix\">."+obj.extension+"</span>" +
+									"</div>" +
+								  "</div>"
+				}
 				vex.dialog.open({
 				  message: Lang.dialogs.rename_file,
 				  input: "<div class=\"row collapse postfix-radius\">"+
 							"<div class=\"small-11 columns\">" +
 							  "<input name=\"new_name\" type=\"text\" value=\""+obj.name+"\" required />" +
 							  "<input name=\"old_name\" type=\"hidden\" value=\""+obj.name+"\" />" +
-							"</div>" +
-							"<div class=\"small-1 columns\">" +
-							  "<span class=\"postfix\">."+obj.extension+"</span>" +
-							"</div>" +
-						  "</div>",
+							"</div>" + postfix,
 				  buttons: [
 					$.extend({}, vex.dialog.buttons.YES, {
 					  text: Lang.dialogs.rename_directory_yes
@@ -209,13 +160,11 @@
 						$.amaran({
 							'message': Lang.message.rename_file_cancelled
 						});
-					}
-					else {
-						$http.post("/admin/fileupload/renamefile",
-						{ source: obj.src, old_name: data.old_name, new_name: data.new_name })
+					} else {
+						$http.post("/admin/fileupload/rename",
+						{ obj: obj, old_name: data.old_name, new_name: data.new_name })
 						.then(function(response) {
 							obj.name = response.data.name;
-							obj.src = response.data.src;
 						});
 					}
 				  }
@@ -239,13 +188,10 @@
 							'message': Lang.message.cancelled
 						});
 					}
-					else {
+					else
+					{
 						$http.post("/admin/fileupload/newdirectory", { folder_name: data.folder_name }).then(function(response) {
-							$scope.directories.push({
-								name: data.folder_name,
-								location: response.data.location,
-								active: 'false'
-							});
+							$scope.directories.push(response.data);
 						});
 					}
 				  }
@@ -253,7 +199,7 @@
 			}
 
 			$scope.select = function(obj) {
-				if(ckeditor_func != null)
+				if (ckeditor_func != null)
 				{
 					window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function()
 					{
@@ -265,7 +211,7 @@
 				}
 				else
 				{
-					if($scope.thumbs != null)
+					if ($scope.thumbs != null)
 					{
 						$scope.getThumbs(obj);
 					}
@@ -275,18 +221,17 @@
 						window.close();
 					}
 				}
-			};
+			}
 			
 			$scope.getThumbs = function(obj) {
 				var wybrany = null;
 				angular.forEach($scope.thumbs, function(value, key) {
-					if(wybrany == null && value.chosen == false) {
+					if (wybrany == null && value.chosen == false) {
 						wybrany = $scope.thumbs[key];
 					}
 				});
 
-				if(wybrany == null)
-				{
+				if (wybrany == null) {
 					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
 					window.opener.FilePicker.getThumbsFromManager(filepickerID, JSON.stringify($scope.thumbs));
 					window.close();
@@ -426,8 +371,15 @@
 				  message: 'Czy napewno usunac?',
 				  callback: function(value) {
 					if(value){
-						$http.post("/admin/fileupload/delete", { name: obj.src }).then(function(response) {
-							$scope.list.splice($scope.list.indexOf(obj), 1);
+						$http.post("/admin/fileupload/delete", { obj: obj }).then(function(response) {
+							if (obj.type == 'file')
+							{
+								$scope.list.splice($scope.list.indexOf(obj), 1);
+							}
+							else
+							{
+								$scope.directories.splice($scope.directories.indexOf(obj), 1);
+							}
 						});
 					}
 				}});
