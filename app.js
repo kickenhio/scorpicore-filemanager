@@ -84,21 +84,13 @@
 			{
 				if (item.selected == 'active' || item.type == 'breadcrumb')
 				{
-					if (item.name == '...')
-					{
-						nazwa = [];
-					}
-					else
-					{
-						nazwa = [item.name];
-					}
-					
 					$http.get("/admin/fileupload/load",{
 						params: {
-							"location[]": item.path.concat(nazwa)
+							"location[]": item.path
 						}
 					}).then(function(response) {
 						$scope.list = response.data.files;
+						$scope.linkback = response.data.linkback;
 						$scope.directories = response.data.directories;
 						$scope.breadcrumbs = response.data.breadcrumbs;
 					});
@@ -232,14 +224,14 @@
 				});
 
 				if (wybrany == null) {
-					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.src);
+					window.opener.FilePicker.getFromManager(filepickerID, '/'+obj.fullpath);
 					window.opener.FilePicker.getThumbsFromManager(filepickerID, JSON.stringify($scope.thumbs));
 					window.close();
 				}
 
 				vex.dialog.open({
 					message: 'Wybierz zaznaczenie dla '+wybrany.default,
-					input: "<img style=\"max-width:100%;\" src=\"/"+obj.src+"\" id=\"cropper\" alt=\"\">",
+					input: "<img style=\"max-width:100%;\" src=\"/"+obj.fullpath+"\" id=\"cropper\" alt=\"\">",
 					buttons: [
 						$.extend({}, vex.dialog.buttons.YES, {
 						  text: 'Wybierz'
@@ -290,7 +282,7 @@
 				
 				caman = function(obj, alter){
 					$("#caman").removeAttr("data-caman-id");
-					Caman("#caman", '/'+obj.src, function () {
+					Caman("#caman", '/'+obj.fullpath, function () {
 						
 						if ($('input[data-filter=clip]').val() != 0) {
 						this.brightness($('input[data-filter=brightness]').val()); }
@@ -303,7 +295,7 @@
 						if (alter){
 							this.render(function () {
 								var image = this.toBase64();
-								$http.post("/admin/fileupload/modifyimage", { source: obj.src, alter_image: image }).then(function(response) {
+								$http.post("/admin/fileupload/modifyimage", { source: obj.fullpath, alter_image: image }).then(function(response) {
 									$.amaran({
 										'message':'Zmodyfikowano.'
 									});
