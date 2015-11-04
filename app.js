@@ -193,13 +193,14 @@
 			$scope.select = function(obj) {
 				if (ckeditor_func != null)
 				{
-					window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.src, function()
+					window.parent.opener.CKEDITOR.tools.callFunction(ckeditor_func, '/'+obj.fullpath, function()
 					{
 						//var element,
 						//dialog = this.getDialog();
 						//element = dialog.getContentElement( 'tab-basic', 'padding' );
 						//element.setValue( obj.resolution[1] / obj.resolution[0] );
 					});
+					window.close();
 				}
 				else
 				{
@@ -216,6 +217,15 @@
 			}
 			
 			$scope.getThumbs = function(obj) {
+				
+				if (obj == null)
+				{
+				angular.forEach($scope.thumbs, function(value, key) {
+							$scope.thumbs[key]['chosen'] = false;
+					});
+					return;
+				}
+				
 				var wybrany = null;
 				angular.forEach($scope.thumbs, function(value, key) {
 					if (wybrany == null && value.chosen == false) {
@@ -269,7 +279,7 @@
 							$.amaran({
 								'message':'Cancelled.'
 							});
-							$scope.thumbs[wybrany['name']]['chosen'] = 'empty';
+							obj = null;
 						}
 						else {
 							$scope.thumbs[wybrany['name']]['chosen'] = $('#cropper').cropper('getData',true);
